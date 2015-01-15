@@ -24,5 +24,13 @@
   "bugs": {
     "url": "https://github.com/jouni-kantola/discrete/issues"
   },
-  "homepage": "https://github.com/jouni-kantola/discrete"
+  "homepage": "https://github.com/jouni-kantola/discrete",
+  "devDependencies": {
+    "gulp": "~3.8.10",
+    "mocha": "~2.1.0",
+    "chai": "~1.10.0",
+    "gulp-concat": "~2.4.3",
+    "gulp-uglify": "~1.0.2",
+    "gulp-sass": "~1.3.1"
+  }
 }
