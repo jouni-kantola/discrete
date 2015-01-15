@@ -1,0 +1,28 @@
+{
+  "name": "discrete",
+  "version": "0.0.0",
+  "description": "An opinionated workflow for creating front-end components.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jouni-kantola/discrete.git"
+  },
+  "keywords": [
+    "front-end",
+    "workflow",
+    "components"
+  ],
+  "author": "Jouni Kantola",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jouni-kantola/discrete/issues"
+  },
+  "homepage": "https://github.com/jouni-kantola/discrete"
+}
