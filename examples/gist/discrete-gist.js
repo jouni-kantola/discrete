@@ -13,13 +13,11 @@ var convertHTML = require('html-to-vdom')
     })
 
 var bus = (function() {
-    
-  var eventBus = new Bacon.Bus(),
+
+    var eventBus = new Bacon.Bus(),
         subscriptions = {}
 
     eventBus.onValue(function(message) {
-        console.dir(subscriptions)
-
         subscriptions[message.msg.msg]
             .forEach(function(eventHandler) {
                 eventHandler(message)
@@ -42,39 +40,39 @@ var bus = (function() {
     }
 })()
 
-var model = {
-    text: 'monkey'
-}
 
-function template() {
-    var markup = "<div><input type='text' id='producer' /><label id='consumer'>{{=it.text || ''}}</label></div>";
-    return doT.template(markup);
-}
+function template(markup) {
+    var template = doT.template(markup)
 
-function render(template) {
-    return template(model);
+    return function(model) {
+        return template(model)
+    }
 }
 
 function fn() {
-    var component = render(template());
-    var vtree = convertHTML(component);
-    var rootNode = createElement(vtree);
-    document.body.appendChild(rootNode);
+    var markup = "<div><input type='text' id='producer' /><label id='consumer'>{{=it.text || ''}}</label></div>"
+    var render = template(markup)
+
+    var component = render({
+        text: 'Go ahead, use the textbox...'
+    })
+    var vtree = convertHTML(component)
+    var rootNode = createElement(vtree)
+    document.body.appendChild(rootNode)
 
     Bacon.fromEventTarget(document.getElementById('producer'), 'keyup')
         .onValue(function(event) {
-            if (event.target.value !== model.text) {
-                bus.publish({
+            //if (event.target.value !== model.text) {
+            bus.publish({
                     msg: 'producer/textbox/value/changed',
                     value: event.target.value
                 })
-
-            }
+                //}
         })
 
     bus.subscribe('producer/textbox/value/changed', function(msg) {
-        model.text = msg.value;
-        var newTree = convertHTML(render(template()));
+        //model.text = msg.value;
+        var newTree = convertHTML(render({text: msg.msg.value}));
         var patches = diff(vtree, newTree);
         rootNode = patch(rootNode, patches);
         vtree = newTree;

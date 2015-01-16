@@ -1,9 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Bacon = require('baconjs');
-var bus = new Bacon.Bus();
-var doT = require('dot');
-var VNode = require('virtual-dom/vnode/vnode');
-var VText = require('virtual-dom/vnode/vtext');
+var Bacon = require('baconjs'),
+    doT = require('dot'),
+    createElement = require('virtual-dom/create-element'),
+    diff = require('virtual-dom/diff'),
+    patch = require('virtual-dom/patch'),
+    VNode = require('virtual-dom/vnode/vnode'),
+    VText = require('virtual-dom/vnode/vtext')
 
 var convertHTML = require('html-to-vdom')
     ({
@@ -11,77 +13,67 @@ var convertHTML = require('html-to-vdom')
         VText: VText
     })
 
-var diff = require('virtual-dom/diff');
-var patch = require('virtual-dom/patch');
+var bus = (function() {
 
+    var eventBus = new Bacon.Bus(),
+        subscriptions = {}
 
+    eventBus.onValue(function(message) {
+        subscriptions[message.msg.msg]
+            .forEach(function(eventHandler) {
+                eventHandler(message)
+            })
+    })
 
-
-var createElement = require('virtual-dom/create-element');
-var model = {
-    text: 'monkey'
-}
-
-function template() {
-    var markup = "<div><input type='text' id='producer' /><label id='consumer'>{{=it.text || ''}}</label></div>";
-    return doT.template(markup);
-}
-
-function render(template) {
-    var blah = template(model);
-    return blah;
-}
-
-var subscriptions = {};
-
-bus.onValue(function(message) {
-    subscriptions[message.msg.msg]
-        .forEach(function(eventHandler) {
-            console.log(eventHandler);
-            eventHandler.call(undefined, message);
-            eventHandler(message);
-        });
-});
-
-function publish(msg, data) {
-    bus.push({
-        msg: msg,
-        data: data
-    });
-}
-
-function subscribe(msg, eventHandler) {
-    if (!subscriptions.hasOwnProperty(msg)) {
-        subscriptions[msg] = [];
+    return {
+        publish: function(msg, data) {
+            eventBus.push({
+                msg: msg,
+                data: data
+            })
+        },
+        subscribe: function(msg, eventHandler) {
+            if (!subscriptions.hasOwnProperty(msg)) {
+                subscriptions[msg] = []
+            }
+            subscriptions[msg].push(eventHandler)
+        }
     }
-    subscriptions[msg].push(eventHandler);
-}
+})()
 
-function dom() {
 
+function template(markup) {
+    var template = doT.template(markup)
+
+    return function(model) {
+        return template(model)
+    }
 }
 
 function fn() {
-    var component = render(template());
-    var vtree = convertHTML(component);
-    var rootNode = createElement(vtree);
-    document.body.appendChild(rootNode);
+    var markup = "<div><input type='text' id='producer' /><label id='consumer'>{{=it.text || ''}}</label></div>"
+    var render = template(markup)
+
+    var component = render({
+        text: 'Go ahead, use the textbox...'
+    })
+    var vtree = convertHTML(component)
+    var rootNode = createElement(vtree)
+    document.body.appendChild(rootNode)
 
     Bacon.fromEventTarget(document.getElementById('producer'), 'keyup')
         .onValue(function(event) {
-            if (event.target.value !== model.text) {
-                publish({
+            //if (event.target.value !== model.text) {
+            bus.publish({
                     msg: 'producer/textbox/value/changed',
                     value: event.target.value
                 })
-
-            }
+                //}
         })
 
-    subscribe('producer/textbox/value/changed', function(msg) {
-        model.text = msg.value;
-        console.log('im here, buddy');
-        var newTree = convertHTML(render(template()));
+    bus.subscribe('producer/textbox/value/changed', function(msg) {
+        //model.text = msg.value;
+        var newTree = convertHTML(render({text: msg.msg.value}));
         var patches = diff(vtree, newTree);
         rootNode = patch(rootNode, patches);
         vtree = newTree;
@@ -93,7 +85,6 @@ if (document.readyState != 'loading') {
 } else {
     document.addEventListener('DOMContentLoaded', fn);
 }
-window.blah2 = Bacon;
 
 },{"baconjs":2,"dot":4,"html-to-vdom":5,"virtual-dom/create-element":39,"virtual-dom/diff":40,"virtual-dom/patch":44,"virtual-dom/vnode/vnode":58,"virtual-dom/vnode/vtext":60}],2:[function(require,module,exports){
 (function (global){
