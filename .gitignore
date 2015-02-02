@@ -26,3 +26,6 @@ node_modules
 
 # Temp files
 *.swp
+
+# Generated files
+.DS_Store
