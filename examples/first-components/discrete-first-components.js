@@ -2,15 +2,9 @@ var Bacon = require('baconjs'),
     createElement = require('virtual-dom/create-element'),
     diff = require('virtual-dom/diff'),
     patch = require('virtual-dom/patch'),
-    VNode = require('virtual-dom/vnode/vnode'),
-    VText = require('virtual-dom/vnode/vtext'),
     bus = require('./bus'),
-    template = require('./template-compiler');
-
-var convertHTML = require('html-to-vdom')({
-    VNode: VNode,
-    VText: VText
-});
+    template = require('./template-compiler'),
+    convertHTML = require('./virtual-reality');
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
@@ -95,7 +89,6 @@ var keyPressConsumer = (function() {
             document.body.appendChild(node);
         }
     };
-
 })();
 
 function addComponents() {
@@ -108,8 +101,6 @@ function addComponents() {
 
 if (document.readyState != 'loading') {
     addComponents();
-
 } else {
     document.addEventListener('DOMContentLoaded', addComponents);
-
 }
