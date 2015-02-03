@@ -4,7 +4,8 @@ var Bacon = require('baconjs'),
     patch = require('virtual-dom/patch'),
     bus = require('./bus'),
     template = require('./template-compiler'),
-    convertHTML = require('./virtual-reality');
+    convertHTML = require('./virtual-reality'),
+    dom = require('./dom-poker');
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
@@ -12,18 +13,15 @@ var keyUpProducer = (function() {
     return {
         template: compiledTemplate,
         render: function() {
-
             var html = convertHTML(compiledTemplate);
             var node = createElement(html);
-            document.body.appendChild(node);
+            dom.add(node);
         },
         publish: function() {
-
-            observe('producerOnKeyUp', 'input', function(event) {
+            dom.observe('producerOnKeyUp', 'input', function(event) {
                 bus.publish('producer/keyup', event.target.value);
             });
         }
-
     };
 })();
 
@@ -33,25 +31,18 @@ var inputProducer = (function() {
     return {
         template: compiledTemplate,
         render: function() {
-
             var html = convertHTML(compiledTemplate);
             var node = createElement(html);
-            document.body.appendChild(node);
+            dom.add(node);
         },
         publish: function() {
-
-            observe('producerOnInput', 'input', function(event) {
+            dom.observe('producerOnInput', 'input', function(event) {
                 bus.publish('producer/input', event.target.value);
             });
         }
-
     };
-
 })();
 
-function observe(elId, eventType, callback) {
-    Bacon.fromEventTarget(document.getElementById(elId), eventType).onValue(callback);
-}
 var keyPressConsumer = (function() {
     var markup = "<label id='consumer'>{{=it.text || ''}}</label>",
         initValue = {
@@ -71,14 +62,12 @@ var keyPressConsumer = (function() {
         dumDaDOM({
             text: msg.data
         });
-
     });
 
     bus.subscribe('producer/input', function(msg) {
         dumDaDOM({
             text: msg.data
         });
-
     });
 
     return {
@@ -86,7 +75,7 @@ var keyPressConsumer = (function() {
         render: function() {
             vtree = convertHTML(compiledTemplate);
             node = createElement(vtree);
-            document.body.appendChild(node);
+            dom.add(node);
         }
     };
 })();
