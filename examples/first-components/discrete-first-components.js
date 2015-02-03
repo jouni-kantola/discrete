@@ -1,50 +1,16 @@
 var Bacon = require('baconjs'),
-    doT = require('dot'),
     createElement = require('virtual-dom/create-element'),
     diff = require('virtual-dom/diff'),
     patch = require('virtual-dom/patch'),
     VNode = require('virtual-dom/vnode/vnode'),
-    VText = require('virtual-dom/vnode/vtext');
-
-function template(markup) {
-    var compiledTemplate = doT.template(markup);
-
-    return function(model) {
-        return compiledTemplate(model);
-    };
-}
+    VText = require('virtual-dom/vnode/vtext'),
+    bus = require('./bus'),
+    template = require('./template-compiler');
 
 var convertHTML = require('html-to-vdom')({
     VNode: VNode,
     VText: VText
 });
-
-var bus = (function() {
-    var eventBus = new Bacon.Bus(),
-        subscriptions = {};
-
-    eventBus.onValue(function(message) {
-        subscriptions[message.msg]
-            .forEach(function(eventHandler) {
-                eventHandler(message);
-            });
-    });
-
-    return {
-        publish: function(msg, data) {
-            eventBus.push({
-                msg: msg,
-                data: data
-            });
-        },
-        subscribe: function(msg, eventHandler) {
-            if (!subscriptions.hasOwnProperty(msg)) {
-                subscriptions[msg] = [];
-            }
-            subscriptions[msg].push(eventHandler);
-        }
-    };
-})();
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
@@ -66,7 +32,6 @@ var keyUpProducer = (function() {
 
     };
 })();
-
 
 var inputProducer = (function() {
     var markup = "<div>onInput: <input type='text' id='producerOnInput' /></div>",
