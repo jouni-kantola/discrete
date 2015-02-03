@@ -4,8 +4,7 @@ var Bacon = require('baconjs'),
     diff = require('virtual-dom/diff'),
     patch = require('virtual-dom/patch'),
     VNode = require('virtual-dom/vnode/vnode'),
-    VText = require('virtual-dom/vnode/vtext'),
-    rootNode;
+    VText = require('virtual-dom/vnode/vtext');
 
 function template(markup) {
     var compiledTemplate = doT.template(markup);
@@ -50,20 +49,24 @@ var bus = (function() {
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
         compiledTemplate = template(markup)({});
-
-    //Bacon.fromEventTarget(document.getElementById('producerOnKeyUp'), 'keyup')
-    //    .onValue(function(event) {
-    //        bus.publish(
-    //            'producer/keyup',
-    //            event.target.value
-
-    //        );
-
-    //    });
     return {
-        template: compiledTemplate
+        template: compiledTemplate,
+        render: function() {
+
+            var html = convertHTML(compiledTemplate);
+            var node = createElement(html);
+            document.body.appendChild(node);
+        },
+        publish: function() {
+
+            observe('producerOnKeyUp', 'input', function(event) {
+                bus.publish('producer/keyup', event.target.value);
+            });
+        }
+
     };
 })();
+
 
 var inputProducer = (function() {
     var markup = "<div>onInput: <input type='text' id='producerOnInput' /></div>",
@@ -101,7 +104,7 @@ var keyPressConsumer = (function() {
     function dumDaDOM(model) {
         var newTree = convertHTML(template(markup)(model));
         var patches = diff(vtree, newTree);
-        node = patch(rootNode, patches);
+        node = patch(node, patches);
         vtree = newTree;
     }
 
@@ -123,7 +126,7 @@ var keyPressConsumer = (function() {
         template: compiledTemplate,
         render: function() {
             vtree = convertHTML(compiledTemplate);
-            var node = createElement(vtree);
+            node = createElement(vtree);
             document.body.appendChild(node);
         }
     };
@@ -132,9 +135,10 @@ var keyPressConsumer = (function() {
 
 function addComponents() {
     inputProducer.render();
-    document.body.appendChild(createElement(convertHTML(keyUpProducer.template)));
+    keyUpProducer.render();
     keyPressConsumer.render();
     inputProducer.publish();
+    keyUpProducer.publish();
 }
 
 if (document.readyState != 'loading') {
