@@ -1,5 +1,4 @@
-var Bacon = require('baconjs'),
-    createElement = require('virtual-dom/create-element'),
+var createElement = require('virtual-dom/create-element'),
     diff = require('virtual-dom/diff'),
     patch = require('virtual-dom/patch'),
     bus = require('./bus'),
@@ -14,8 +13,8 @@ var keyUpProducer = (function() {
         template: compiledTemplate,
         render: function() {
             var html = convertHTML(compiledTemplate);
-            var node = createElement(html);
-            dom.add(node);
+            var el = createElement(html);
+            dom.add(el);
         },
         publish: function() {
             dom.observe('producerOnKeyUp', 'input', function(event) {
@@ -32,8 +31,8 @@ var inputProducer = (function() {
         template: compiledTemplate,
         render: function() {
             var html = convertHTML(compiledTemplate);
-            var node = createElement(html);
-            dom.add(node);
+            var el = createElement(html);
+            dom.add(el);
         },
         publish: function() {
             dom.observe('producerOnInput', 'input', function(event) {
