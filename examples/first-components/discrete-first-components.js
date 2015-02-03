@@ -3,7 +3,7 @@ var createElement = require('virtual-dom/create-element'),
     patch = require('virtual-dom/patch'),
     bus = require('./bus'),
     template = require('./template-compiler'),
-    convertHTML = require('./virtual-reality'),
+    createVTree = require('./virtual-reality'),
     dom = require('./dom-poker');
 
 var keyUpProducer = (function() {
@@ -12,8 +12,8 @@ var keyUpProducer = (function() {
     return {
         template: compiledTemplate,
         render: function() {
-            var html = convertHTML(compiledTemplate);
-            var el = createElement(html);
+            var vtree = createVTree(compiledTemplate);
+            var el = createElement(vtree);
             dom.add(el);
         },
         publish: function() {
@@ -30,8 +30,8 @@ var inputProducer = (function() {
     return {
         template: compiledTemplate,
         render: function() {
-            var html = convertHTML(compiledTemplate);
-            var el = createElement(html);
+            var vtree = createVTree(compiledTemplate);
+            var el = createElement(vtree);
             dom.add(el);
         },
         publish: function() {
@@ -51,7 +51,7 @@ var keyPressConsumer = (function() {
         node, vtree;
 
     function dumDaDOM(model) {
-        var newTree = convertHTML(template(markup)(model));
+        var newTree = createVTree(template(markup)(model));
         var patches = diff(vtree, newTree);
         node = patch(node, patches);
         vtree = newTree;
@@ -72,7 +72,7 @@ var keyPressConsumer = (function() {
     return {
         template: compiledTemplate,
         render: function() {
-            vtree = convertHTML(compiledTemplate);
+            vtree = createVTree(compiledTemplate);
             node = createElement(vtree);
             dom.add(node);
         }
