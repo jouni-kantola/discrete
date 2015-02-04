@@ -1,11 +1,23 @@
 var Bacon = require('baconjs');
 
+function runOnLoad(fn) {
+    if (document.readyState != 'loading') {
+        fn();
+    } else {
+        document.addEventListener('DOMContentLoaded', fn);
+    }
+}
+
 function observe(elId, eventType, callback) {
-    Bacon.fromEventTarget(document.getElementById(elId), eventType).onValue(callback);
+    runOnLoad(function() {
+        Bacon.fromEventTarget(document.getElementById(elId), eventType).onValue(callback);
+    });
 }
 
 function add(node) {
-    document.body.appendChild(node);
+    runOnLoad(function() {
+        document.body.appendChild(node);
+    });
 }
 
 module.exports = {
