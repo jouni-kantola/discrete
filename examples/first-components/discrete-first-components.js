@@ -1,94 +1,46 @@
-var createElement = require('virtual-dom/create-element'),
-    diff = require('virtual-dom/diff'),
-    patch = require('virtual-dom/patch'),
-    bus = require('./bus'),
-    template = require('./template-compiler'),
-    createVTree = require('./virtual-reality'),
+var bus = require('./bus'),
+    component = require('./discrete-component'),
     dom = require('./dom-poker');
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
-        compiledTemplate = template(markup)({});
-    return {
-        template: compiledTemplate,
-        render: function() {
-            var vtree = createVTree(compiledTemplate);
-            var el = createElement(vtree);
-            dom.add(el);
-        },
-        publish: function() {
-            dom.observe('producerOnKeyUp', 'input', function(event) {
+        c = component(markup, null, function() {
+            dom.observe('producerOnKeyUp', 'keyup', function(event) {
                 bus.publish('producer/keyup', event.target.value);
             });
-        }
-    };
+        });
+    dom.add(c.create());
+    c.pubSub();
 })();
 
 var inputProducer = (function() {
     var markup = "<div>onInput: <input type='text' id='producerOnInput' /></div>",
-        compiledTemplate = template(markup)({});
-    return {
-        template: compiledTemplate,
-        render: function() {
-            var vtree = createVTree(compiledTemplate);
-            var el = createElement(vtree);
-            dom.add(el);
-        },
-        publish: function() {
+        c = component(markup, null, function() {
             dom.observe('producerOnInput', 'input', function(event) {
                 bus.publish('producer/input', event.target.value);
             });
-        }
-    };
+        });
+    dom.add(c.create());
+    c.pubSub();
 })();
 
 var keyPressConsumer = (function() {
     var markup = "<label id='consumer'>{{=it.text || ''}}</label>",
-        initValue = {
+        model = {
             text: 'Go ahead, try the textboxes...'
         },
-        compiledTemplate = template(markup)(initValue),
-        node, vtree;
-
-    function dumDaDOM(model) {
-        var newTree = createVTree(template(markup)(model));
-        var patches = diff(vtree, newTree);
-        node = patch(node, patches);
-        vtree = newTree;
-    }
-
-    bus.subscribe('producer/keyup', function(msg) {
-        dumDaDOM({
-            text: msg.data
+        c = component(markup, model, null, function() {
+            bus.subscribe('producer/keyup', function(msg) {
+                c.update({
+                    text: msg.data
+                });
+            });
+            bus.subscribe('producer/input', function(msg) {
+                c.update({
+                    text: msg.data
+                });
+            });
         });
-    });
-
-    bus.subscribe('producer/input', function(msg) {
-        dumDaDOM({
-            text: msg.data
-        });
-    });
-
-    return {
-        template: compiledTemplate,
-        render: function() {
-            vtree = createVTree(compiledTemplate);
-            node = createElement(vtree);
-            dom.add(node);
-        }
-    };
+    dom.add(c.create());
+    c.pubSub();
 })();
-
-function addComponents() {
-    inputProducer.render();
-    keyUpProducer.render();
-    keyPressConsumer.render();
-    inputProducer.publish();
-    keyUpProducer.publish();
-}
-
-if (document.readyState != 'loading') {
-    addComponents();
-} else {
-    document.addEventListener('DOMContentLoaded', addComponents);
-}
