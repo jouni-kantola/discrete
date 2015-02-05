@@ -9,19 +9,22 @@ var createElement = require('virtual-dom/create-element'),
 module.exports = function(markup, model) {
     var m = model || {},
         compiledTemplate = template(markup)(m),
-        node,
+        el,
         vtree;
 
     return {
         create: function() {
             vtree = createVTree(compiledTemplate);
-            node = createElement(vtree);
-            return node;
+            el = createElement(vtree);
+            return el;
         },
         update: function(model) {
-            var newTree = createVTree(template(markup)(model));
+            var updatedTemplate = template(markup)(model);
+            if(compiledTemplate === updatedTemplate)
+                return;
+            var newTree = createVTree(updatedTemplate);
             var patches = diff(vtree, newTree);
-            node = patch(node, patches);
+            el = patch(el, patches);
             vtree = newTree;
         },
         publish: function(elId, onEventType, eventStreamType) {
