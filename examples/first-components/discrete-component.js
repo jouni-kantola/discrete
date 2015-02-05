@@ -2,9 +2,11 @@ var createElement = require('virtual-dom/create-element'),
     diff = require('virtual-dom/diff'),
     patch = require('virtual-dom/patch'),
     template = require('./template-compiler'),
-    createVTree = require('./virtual-reality');
+    createVTree = require('./virtual-reality'),
+    bus = require('./bus'),
+    dom = require('./dom-poker');
 
-module.exports = function(markup, model, pub, sub) {
+module.exports = function(markup, model) {
     var m = model || {},
         compiledTemplate = template(markup)(m),
         node,
@@ -22,13 +24,13 @@ module.exports = function(markup, model, pub, sub) {
             node = patch(node, patches);
             vtree = newTree;
         },
-        pubSub: function() {
-            if (pub) {
-                pub.call(this);
-            }
-            if (sub) {
-                sub.call(this);
-            }
+        publish: function(elId, onEventType, eventStreamType) {
+            dom.observe(elId, onEventType, function(event) {
+                bus.publish(eventStreamType, event.target.value);
+            });
+        },
+        subscribe: function(eventType, callback) {
+            bus.subscribe(eventType, callback);
         }
     };
 };

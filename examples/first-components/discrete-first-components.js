@@ -4,24 +4,16 @@ var bus = require('./bus'),
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
-        c = component(markup, null, function() {
-            dom.observe('producerOnKeyUp', 'keyup', function(event) {
-                bus.publish('producer/keyup', event.target.value);
-            });
-        });
+        c = component(markup);
     dom.add(c.create());
-    c.pubSub();
+    c.publish('producerOnKeyUp', 'keyup', 'producer/keyup');
 })();
 
 var inputProducer = (function() {
     var markup = "<div>onInput: <input type='text' id='producerOnInput' /></div>",
-        c = component(markup, null, function() {
-            dom.observe('producerOnInput', 'input', function(event) {
-                bus.publish('producer/input', event.target.value);
-            });
-        });
+        c = component(markup);
     dom.add(c.create());
-    c.pubSub();
+    c.publish('producerOnInput', 'input', 'producer/input');
 })();
 
 var keyPressConsumer = (function() {
@@ -29,18 +21,19 @@ var keyPressConsumer = (function() {
         model = {
             text: 'Go ahead, try the textboxes...'
         },
-        c = component(markup, model, null, function() {
-            bus.subscribe('producer/keyup', function(msg) {
-                c.update({
-                    text: msg.data
-                });
-            });
-            bus.subscribe('producer/input', function(msg) {
-                c.update({
-                    text: msg.data
-                });
+        c = component(markup, model);
+
+    dom.add(c.create());
+    c.subscribe('producer/keyup',
+        function(msg) {
+            c.update({
+                text: msg.data
             });
         });
-    dom.add(c.create());
-    c.pubSub();
+    c.subscribe('producer/input',
+        function(msg) {
+            c.update({
+                text: msg.data
+            });
+        });
 })();
