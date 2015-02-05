@@ -1,5 +1,6 @@
-var component = require('./discrete-component'),
-    dom = require('./dom-poker');
+var discrete = require('../../lib/index'),
+    component = discrete.component,
+    dom = discrete.dom; 
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
