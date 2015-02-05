@@ -14,9 +14,12 @@ function observe(elId, eventType, callback) {
     });
 }
 
-function add(node) {
+function add(el, callback) {
     runOnLoad(function() {
-        document.body.appendChild(node);
+        document.body.appendChild(el);
+        if (callback) {
+            callback();
+        }
     });
 }
 

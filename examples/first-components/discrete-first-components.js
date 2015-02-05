@@ -1,19 +1,23 @@
-var bus = require('./bus'),
-    component = require('./discrete-component'),
+var component = require('./discrete-component'),
     dom = require('./dom-poker');
 
 var keyUpProducer = (function() {
     var markup = "<div>onKeyUp: <input type='text' id='producerOnKeyUp' /></div>",
-        c = component(markup);
-    dom.add(c.create());
-    c.publish('producerOnKeyUp', 'keyup', 'producer/keyup');
+        c = component(markup),
+        el = c.create();
+
+    dom.add(el, function() {
+        c.publish('producerOnKeyUp', 'keyup', 'producer/keyup');
+    });
 })();
 
 var inputProducer = (function() {
     var markup = "<div>onInput: <input type='text' id='producerOnInput' /></div>",
-        c = component(markup);
-    dom.add(c.create());
-    c.publish('producerOnInput', 'input', 'producer/input');
+        c = component(markup),
+        el = c.create();
+    dom.add(el, function() {
+        c.publish('producerOnInput', 'input', 'producer/input');
+    });
 })();
 
 var keyPressConsumer = (function() {
@@ -21,19 +25,22 @@ var keyPressConsumer = (function() {
         model = {
             text: 'Go ahead, try the textboxes...'
         },
-        c = component(markup, model);
+        c = component(markup, model),
+        el = c.create();
 
-    dom.add(c.create());
-    c.subscribe('producer/keyup',
-        function(msg) {
-            c.update({
-                text: msg.data
+    dom.add(el, function() {
+        c.subscribe('producer/keyup',
+            function(msg) {
+                c.update({
+                    text: msg.data
+                });
             });
-        });
-    c.subscribe('producer/input',
-        function(msg) {
-            c.update({
-                text: msg.data
+
+        c.subscribe('producer/input',
+            function(msg) {
+                c.update({
+                    text: msg.data
+                });
             });
-        });
+    });
 })();
